@@ -215,6 +215,8 @@ class Checker:
 
                 if envelope_num == curr_env_num:
                     self.counter = self.counter + 1.0
+                    num = copy.deepcopy(self.counter)
+                    self.tracking_df.loc[self.tracking_df['envelope_num'] == curr_env_num, ['num_ToSpot_in_folder']] = num
                 else:
                     num = copy.deepcopy(self.counter)
                     self.tracking_df.loc[self.tracking_df['envelope_num'] == curr_env_num, ['num_ToSpot_in_folder']] = num
