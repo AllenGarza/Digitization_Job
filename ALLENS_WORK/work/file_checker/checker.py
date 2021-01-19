@@ -44,7 +44,6 @@ class Checker:
         initial_file(re.pattern)
         df_updater(int, re.pattern)
         
-        
     """
 
     def __init__(self, dir_of_tracking, dir_of_spotted_imgs, dir_of_tospot_imgs):
