@@ -138,7 +138,7 @@ class Checker:
         :return:
         """
 
-        d = len(os.path.basename(self.dir_of_tracking)) + 1
+        d = len(os.path.basename(self.dir_of_tracking))
         save_dir = self.dir_of_tracking[:-d]
         os.chdir(save_dir)
         output_name = self.file_name[:-4] + "-OUT-.xlsx"
