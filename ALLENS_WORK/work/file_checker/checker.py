@@ -35,7 +35,16 @@ class Checker:
         file_name(str): the base name of the file of the sheet.
         counter(float/int): a counter used for various operations.
         spotted_or_tospot(bool): a selector of the order of operations.
-
+        
+    Methods:
+        load_tracking()
+        load_spotted_imgs_info()
+        load_tospot_imgs_info()
+        save_df()
+        initial_file(re.pattern)
+        df_updater(int, re.pattern)
+        
+        
     """
 
     def __init__(self, dir_of_tracking, dir_of_spotted_imgs, dir_of_tospot_imgs):
@@ -139,7 +148,7 @@ class Checker:
 
     # allows us to find the top of the list of imgs, letting us know what envelope number our list begins with
     def initial_file(self, pattern):
-        """finds the first file.
+        """finds the first file to begin counting.
 
         We do this as, know the files will follow one another from top to bottom. We obtain the top images name and env_num,
         knowing the rest will follow.
