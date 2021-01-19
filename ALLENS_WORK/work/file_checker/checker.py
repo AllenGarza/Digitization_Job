@@ -156,7 +156,7 @@ class Checker:
 
     def df_updater(self, curr_env_num, pattern):
         """Counts images, ensures they correspond to a specific entry, saves this information into dataframe.
-        Does this sequentially, can change this to do divide and conquer in the future sometime maybe.
+        Does this sequentially, can change this to use recursion in the future sometime maybe.
 
         :param curr_env_num: starting envelope number.
         :param pattern: pattern of naming template.
