@@ -16,8 +16,8 @@ import pandas as pd
 
 def main():
     if len(sys.argv) != 4:
-        print('Usage: SMDR_tracking_checker [tracking_dir] [spotted_imgs_dir] [tospot_imgs_dir] \n')
-        print('Outputs ***_OUT_.xlsx to wherever your tracking_dir is stored.')
+        print('Usage: SMDR_tracking_checker.py [tracking_dir] [spotted_imgs_dir] [tospot_imgs_dir] \n')
+        print("Outputs: '***_OUT_.xlsx' to wherever your tracking_dir is stored.")
 
     # Testing #
     # tracking_dir = r'C:\Users\allen\PycharmProjects\work\file_checker\checker_env\SMDR_1961_Capture-and-Processing'
