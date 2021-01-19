@@ -39,6 +39,13 @@ class Checker:
     """
 
     def __init__(self, dir_of_tracking, dir_of_spotted_imgs, dir_of_tospot_imgs):
+        """Constructor that initiates everything.
+        
+        Directories passed as arguments allows us to access all the necessary dirs and files
+        for the application of this program.
+     
+        """
+        
         self.tracking_df = None
         self.file_name = os.path.basename(dir_of_tracking)
 
