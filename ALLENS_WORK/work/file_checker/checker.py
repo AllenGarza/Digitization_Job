@@ -2,7 +2,7 @@
 1/18/2021
 @Author Allen Garza
 
-This is meant to be used in conjunction with SMDR_tracking_checker.
+This is meant to be used in conjunction with SMDR_tracking_checker. This is the module that does all the work.
 """
 
 import re
@@ -77,8 +77,10 @@ class Checker:
         :return:
         """
 
-        dir_of_tracking_xlsx = self.dir_of_tracking + '.xlsx'
-        df = pd.read_excel(dir_of_tracking_xlsx, nrows= 500)
+        if ".xlsx" not in self.dir_of_tracking:
+            self.dir_of_tracking = self.dir_of_tracking + '.xlsx'
+
+        df = pd.read_excel(self.dir_of_tracking, nrows= 500)
         df_refined = df[['Envelope Title', 'Envelope #', '# Spotted', 'ToSpot']]
         df_refined = df_refined.rename(columns={"Envelope #": "envelope_num", "# Spotted": "num_spotted"})
         self.tracking_df = df_refined
@@ -143,7 +145,7 @@ class Checker:
         os.chdir(save_dir)
         output_name = self.file_name[:-4] + "-OUT-.xlsx"
         self.tracking_df.to_excel(output_name)
-        print('SAVED')
+        print("SAVED '*-OUT-.xlsx' at " + save_dir)
 
     # allows us to find the top of the list of imgs, letting us know what envelope number our list begins with
     def initial_file(self, pattern):
@@ -185,8 +187,6 @@ class Checker:
             for f in os.listdir(self.dir_of_spotted_imgs):
                 if f[-4:] != '.tif':    # a quick check to ensure it is the correct format '.tif'
                     continue
-
-
                 imgstr = str(f)
                 m = pattern.match(imgstr)
                 envelope_num = float(m.group(2))
