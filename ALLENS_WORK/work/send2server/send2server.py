@@ -17,18 +17,6 @@ def main():
     elif sys.argv == 4:
         sender = Sender(sys.argv[1], sys.argv[2], sys.argv[3])
 
-    output_ok = sender.check_output()
-
-    if output_ok:
-        go = sender.prompt_copy()
-        if go:
-            try:
-                sender.move_files()
-            except RuntimeError:
-                print("Error!")
-    else:
-        print("output not okay.")
-
 
 if __name__ == '__main__':
     main()
