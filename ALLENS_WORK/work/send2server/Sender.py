@@ -4,10 +4,10 @@ import re
 from multipledispatch import dispatch
 import image
 from collections import defaultdict
-from shutil import copyfile
+from shutil import copyfile  # we'll use copy2
+
 
 class Sender:
-
     '''
     during construction, our sender checks and loads files
 
@@ -17,178 +17,91 @@ class Sender:
 
     def __init__(self, *args):
 
-        if len(args) == 4: # mixed_files (subject to change based on project)
-            self.input_jpg_dir = None
-            self.input_tif_dir = None
-            self.input_dir = None
-            self.output_dir = None
-            self.input_dir_setter(*args)
+        self.input_dir = None
+        self.output_dir = None
 
-            self.files_tif, self.files_jpg = None, None
-            self.pattern = None
-            self.counter = 0
-            self.tif_size = 0
-            self.jpg_size = 0
+        self.counter = 0
+        self.file_size = 0
 
-            self.p1 = None #should initialize these here.
-            self.p2 = None
-            self.p3 = None
+        self.envelopes = []  # list containing titles of envelopes, will use as keys later in file_divider
+        self.file_paths = []
+        self.file_divider = {}  # key should match value of image.output_dir, value is actual output
+        self.file_mapper = {}
+        self.files = None
 
-            self.choose_pattern()
-            self.file_divider_jpg = {} # key should match value of image.output_dir, value is actual output
-            self.file_divider_tif = {}
-            self.files_jpg, self.files_tif = self.check_and_load_files_scrambled() # loads all images in
-            self.file_divider_setter() # sets up our output_dir dictionary
-            self.order_files() # assigns the imgs in self.files_jpg and *_tif to the respective dirs.
-
-
-        elif len(args) == 4:
-            self.input_dir_tif, self.input_dir_jpg = self.input_checker_parser(args[1], args[2])
+        self.dir_setter(*args)
+        self.file_divider_setter()  # sets up our output_dir dictionary
+        self.order_files()  # assigns the imgs in self.files_jpg and *_tif to the respective dirs.
 
     '''Categorize files into two vectors, one of tifs, other of jpgs, obtain file size of each vector as well
     in tif_size and jpg_size.
     
     '''
+
     @dispatch(str, str)
-    def input_dir_setter(self, dir_1, dir_2): # the case where only 1 input and 1 output are given.
+    def dir_setter(self, input_dir, output_dir):  # the case where only 1 input and 1 output are given.
 
-        if not os.path.isdir(dir_1) or not os.path.isdir(dir_2):
-            print("please input correct directories,")
+        if not os.path.isdir(input_dir):
+            print("ERROR: Input Directory is not a true directory.")
             exit()
+        elif not os.path.isdir(output_dir):
+            print("ERROR: Output Directory is not a true directory.")
+        else:
+            dirs_containing_imgs = os.listdir(input_dir)  # a list containing all of our 'envelopes'
+            dirs_to_contain_imgs = os.listdir(output_dir)  # output list containing all of our 'envelopes'
+            for dir in dirs_containing_imgs:  # each dir containing images
+                envelope = str(os.path.basename(dir))  # get basename of dir (envelope)
+                self.envelopes.append(envelope)  # append to our list of envelopes
+                self.file_divider[envelope] = []  # use key and associate an empty list
+                dir_path = os.path.join(input_dir, dir)  # get path of the envelope
+                file_extensions = os.listdir(
+                    dir_path)  # get names directories that show a separation by file type (tif, jpg) within envelope
+                for file_extension in file_extensions:  # for each directory that separates imgs by file type
+                    self.file_divider[envelope].append(file_extension)  # add file types within each envelope to a
+                    # list and associate list with envelopes
+                    path_of_files = os.path.join(dir_path, file_extension)
+                    self.file_paths = path_of_files
+                    self.file_mapper[path_of_files] = None
+                    self.check_and_load_files(path_of_files)
 
-    @dispatch(str, str, str)
-    def input_dir_setter(self, dir_1, dir_2, dir_3): # the case where we have 2 inputs and on output.
+            file_type_ex = self.file_divider[self.envelopes[0]]
 
-        if not os.path.isdir(dir_1) or not os.path.isdir(dir_2) or not os.path.isdir(dir_3):
-            print("please input correct directories,")
-            exit()
-
-        dir_1 = str(dir_1)
-        dir_2 = str(dir_2)
-        dir_3 = str(dir_3)
-
-        list_of_dir = [dir_1, dir_2, dir_3]
-        for x in list_of_dir:
-            if 'tif' in x:
-                self.input_dir_tif = x
-                list_of_dir.remove(x)
-            elif 'jpg' in x:
-                self.input_dir_jpg = x
-                list_of_dir.remove(x)
-            else:
-                self.output_dir = x
-                list_of_dir.remove(x)
-        print("here's your directories . . . .\n")
-        print(self.input_dir_jpg)
-        print(self.input_dir_tif)
-        print(self.output_dir)
+            print("here are the directories . . . .\n")
+            print('INPUT dirs: ', dirs_to_contain_imgs, '\n')
+            print('OUTPUT dirs: ', dirs_to_contain_imgs, '\n')
+            print('Files are separated by:', file_type_ex)
+            print('Is this correct?')
 
     @property
-    def check_and_load_files_scrambled(self):
-        files_tif = []
-        files_jpg = []
-        file_list = os.listdir(self.input_dir)
+    def check_and_load_files(self, path_of_files):
+        files = os.listdir(path_of_files)
+        size_of_directory = 0
+        for file in files:
+            file_path = os.path.join(path_of_files, file)
+            size_of_directory = size_of_directory + os.stat(file_path)  # in bytes
 
-        for f in self.files_tif:
-            f_name = str(f)
-            if (f_name[:-4]) == '.tif':
-                img = image(f, 'tif')
-                files_tif.append(img)
-                self.output_dir[img] = img.get_output_dir()
-                self.tif_size = self.tif_size + os.stat(f).st_size  # in bytes
+        size_of_directory = size_of_directory * 10 ^ (-6)  # in MB
+        # we now know the size of files in each subdirectory of the file types.
+        # lets associate the size with the address.
 
-
-        for f in self.files_jpg:
-            f_name = str(f)
-            if (f_name[:-4]) == 'jpg':
-                img = image(f, 'jpg')
-                files_jpg.append(img)
-                self.output_dir[img] = img.get_output_dir()
-                self.jpg_size = self.jpg_size + os.stat(f).st_size  # in bytes
-
-
-        self.tif_size = self.tif_size * (10 ^ (-6))  # b to MB
-        self.jpg_size = self.jpg_size * (10 ^ (-6))  # b to MB
-        return files_tif, files_jpg
-
-    @property
-    def choose_pattern(self):
-        # SMDR_1961-Envelope                             ## NAMING TEMPLATE ##
-        self.p1 = re.compile("^([A-Z]+)(_)(\d+)(-)(\d)")
-        # self.p3 = re.compile("")
-        # .
-        # .
-        # .
-        # pn
-
-        file_name = str(self.files_tif[0])
-
-        if re.match(self.p1, file_name):
-            return self.p1
-        elif re.match(self.p2, file_name):
-            return self.p2
-        # elif re.match(pn, file_name):
-
-    def file_divider_setter(self):
-        if self.pattern == self.p1:
-            print("Checking Output Folder. . ." + self.output_dir + '\n')
-            if os.path.isdir(self.output_dir):
-                output_dir_list = os.listdir(self.output_dir)
-                for dir in output_dir_list:
-
-                    envelope = os.path.basename(os.path.normpath(dir))  # gets base path.
-                    self.file_divider_tif[envelope] = []
-                    self.file_divider_jpg[envelope] = []
-
-        # elif self.pattern == self.p2:
+        self.file_mapper[
+            path_of_files] = size_of_directory  # mapping the address of each group of files to values of their size.
 
     def prompt_copy(self):
-        assert isinstance(self.output_dir, object)
-        assert isinstance(self.input_dir, object)
-        total = self.jpg_size + self.tif_size
+        for dir_containing_imgs in self.file_paths:
+            file_ext = os.path.basename(dir_containing_imgs)  # (tif, jpg, tospot, etc.)
 
         while "the answer is invalid.\n":
             print("Do you want to move: \n",
-                self.jpg_size, "MB of jpgs, \n",
-                self.tif_size, "MB of tifs, \n",
-                total, "MB total \n",
-                "from " + self.input_dir + " to " + self.output_dir + "?")
+                  self.jpg_size, "MB of jpgs, \n",
+                  self.tif_size, "MB of tifs, \n",
+                  total, "MB total \n",
+                  "from " + self.input_dir + " to " + self.output_dir + "?")
             reply = str(input('(y/n): ').lower().strip())
             if reply[:1] == 'y':
                 return True
             elif reply[:1] == 'n':
                 return False
 
-    '''we are gonna create vectors, where each vector is a group of img sorted by their envelope number
-    then we will assign an output to it via dictionary key/value pairs. our key is our output directory containing the
-    directories of images by their env num. assigned to each key is a list containing all images that are meant to go into 
-    their corresponding folders.
-    '''
-    def order_files(self):
-
-        for img in self.files_tif:  # refer to image.py class
-            envelope_dir = img.get_output_dir()
-            if envelope_dir in self.file_divider:
-                self.file_divider[envelope_dir].append(img)
-
-
     def copy_files(self):
-
         copy = self.prompt_copy()
-
-        if copy:
-            print("...MOVING FILES...")
-            for dir in os.listdir(self.output_dir):
-                dir_name = str(os.path.basename(dir))
-                tif_or_jpg_dirs = os.listdir(dir)
-                for tif_or_jpg_dir in tif_or_jpg_dirs:
-                    os.chdir(tif_or_jpg_dir)
-                    tif_or_jpg = str(os.path.basename(tif_or_jpg_dir))
-                    if tif_or_jpg == 'tif':
-                        output = os.path.join(dir, tif_or_jpg_dir, tif_or_jpg)
-                        os.path.
-
-                    if dir_name in self.file_divider:
-                        batch = self.file_divider[dir_name]  # vector containing our images.
-                        os.write()
-
