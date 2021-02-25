@@ -1,40 +1,49 @@
 send2server.py and Sender.py README
 
 Author: Allen Garza
-Date: 2/11/2021
+Date: 2/24/2021
 
 
-**********USAGE AND PREREQUISITES************
+**********USAGE AND PREREQUISITES*********************
 send2server.py can be called with the following usage in mind...
+
 Usage: send2server.py [input_dir] [output_dir]
 
-# input_dir: A directory whose file structure looks like. . .
+such that...
+
+input_dir: Is a directory whose file structure looks like...
 
 -input_dir
---dir_containing_imgs
+--dir_containing_imgs (aka envelope)
 --dir_containing_imgs
   .
   .
-  . (inside each dir_containing_imgs)
----separate_imgs_by_filetype (ex.tif, 1_tif, 1500x-tospot, etc.) # NOTE: Images may be separated by an arbitrary amount of file types.
+  . (inside each dir_containing_imgs) (aka within each envelope)
+---separate_imgs_by_filetype_dir (ext: tif, tif_master, 1500x-tospot, etc.)
 
-# output_dir: Similar to input_dir.
-***************************************
+and...
+
+output_dir: Similar to input_dir.
+
+**************************************************************
 
 As of now, this program is reliant on the fact that the user knows and can vouch for a similar hierarchy of files b/t the input_dir
-and ouput_dir.
+and ouput_dir. It does check this and will stop in several places if there are discrepencies.
+
+Future Considerations: 
+- Using recursion to map directories, allowing for a bit more flexibility. 
+- Having the program create output directories, so its not dependent on if the output necesarrily matches the input.
 
 ******************Order of Operations***********************
 
 -send2server.py calls Sender.py using input_dir and output_dir as a part of its construction.
 
--Sender.py then calls dir_setter() using our input_dir and output_dir as parameters, and takes 
-note of all of the dirs_containing_imgs within input_dir, as well as their separation by file type.
-A dictionary is used to correlate the envelope the images are in and the types of file extensions,
-within the envelope. A prompt asks if everything is correct so far.
-
--
+-Sender: can be split into two main methods: dir_setter(), and check_and_load_files()
+    1.) dir_setter() - Grabs all input file paths, maps them to envelope numbers. Does the same with output paths.
+    2.) check_and_load_files() - Using a mapper, we move files by envelope number, using envelope number as a key to obtain paths to where the files are to where the files
+    need to be.
 
 
-creating a dictionary whose key is the 
+
+
 
