@@ -44,9 +44,11 @@ Future Considerations:
 -Sender: can be split into two main methods: dir_setter(), and check_and_load_files()
 
     1.) dir_setter() - Grabs all input file paths, maps them to envelope numbers. Does the same with output paths with a similar process.
+    Obtain a list of envelope numbers, we will us this as our keys.
     
-    2.) check_and_load_files() - Using a mapper, we move files by envelope number, using envelope number as a key to obtain paths to where the files are to where the files
-    need to be. shutil.copyfile() does the actual copying, one file at a time.
+    2.) check_and_load_files() - We move files by envelope number, which we have a list of obtained via dir_setter(). Using these envelope numbers as
+    keys on our dictionarys where we mapped these keys to paths, paths that tell us where the files are and where the files should go.
+    shutil.copyfile() does the actual copying, one file at a time.
 
 
 
